@@ -1,0 +1,54 @@
+name: Oracle Cloud Auto Provisioner
+on:
+  schedule:
+    - cron: '*/30 * * * *' # Run every 30 minutes
+  workflow_dispatch:
+
+jobs:
+  provision:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: "1.5.0"
+
+      - name: Write OCI config and key
+        run: |
+          mkdir -p ~/.oci
+          echo "${{ secrets.OCI_KEY_FILE }}" > ~/.oci/oci_api_key.pem
+          chmod 600 ~/.oci/oci_api_key.pem
+          cat <<EOF > ~/.oci/config
+          [DEFAULT]
+          user=${{ secrets.OCI_USER }}
+          fingerprint=${{ secrets.OCI_FINGERPRINT }}
+          tenancy=${{ secrets.OCI_TENANCY }}
+          region=${{ secrets.OCI_REGION }}
+          key_file=/home/runner/.oci/oci_api_key.pem
+          EOF
+          chmod 600 ~/.oci/config
+
+      - name: Terraform Init
+        run: terraform init
+
+      - name: Terraform Apply Loop
+        run: |
+          export OCI_CLI_AUTH="api_key"
+          export OCI_CONFIG_FILE="/home/runner/.oci/config"
+          
+          END=$((SECONDS+1500))
+          while [ $SECONDS -lt $END ]; do
+            echo "Attempting to create instance at $(date)..."
+            if terraform apply -auto-approve; then
+              echo "SUCCESS! Instance created."
+              exit 0
+            else
+              echo "Failed or out of capacity. Retrying in 60 seconds..."
+              sleep 60
+            fi
+          done
+          echo "Timeout reached. Will be triggered again by cron."
+          exit 1
