@@ -44,6 +44,7 @@ jobs:
             echo "Attempting to create instance at $(date)..."
             if terraform apply -auto-approve; then
               echo "SUCCESS! Instance created."
+              curl -s -X POST https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage -d chat_id=${{ secrets.TELEGRAM_CHAT_ID }} -d text="🎉 MÜJDE! Oracle Cloud ARM (24GB RAM) sunucun başarıyla oluşturuldu! Hemen panele girip kontrol edebilirsin!"
               exit 0
             else
               echo "Failed or out of capacity. Retrying in 60 seconds..."
