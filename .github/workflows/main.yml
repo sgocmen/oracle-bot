@@ -39,7 +39,7 @@ jobs:
           export OCI_CLI_AUTH="api_key"
           export OCI_CONFIG_FILE="/home/runner/.oci/config"
           
-         END=$((SECONDS+21000))
+          END=$((SECONDS+21000))
           while [ $SECONDS -lt $END ]; do
             echo "Attempting to create instance at $(date)..."
             if terraform apply -auto-approve; then
