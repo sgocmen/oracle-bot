@@ -52,4 +52,4 @@ jobs:
             fi
           done
           echo "Timeout reached. Will be triggered again by cron."
-          exit 1
+          exit 0
