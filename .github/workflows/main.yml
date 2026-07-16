@@ -30,7 +30,8 @@ jobs:
           key_file=/home/runner/.oci/oci_api_key.pem
           EOF
           chmod 600 ~/.oci/config
-
+      - name: Telegram Test Mesaji
+        run: curl -s -X POST https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage -d chat_id=${{ secrets.TELEGRAM_CHAT_ID }} -d text="📡 TEST BAŞARILI: Oracle Bot şifreleri doğru okudu ve ava başladı!"
       - name: Terraform Init
         run: terraform init
 
